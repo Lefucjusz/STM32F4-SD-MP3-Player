@@ -38,6 +38,24 @@ static bool is_extension(const char *filename, const char *ext) {
     return false;
 }
 
+static bool configure_i2s(uint32_t sample_rate) {
+	/* Only 44k1 and 48k supported for now */
+	if ((sample_rate != I2S_AUDIOFREQ_44K) && (sample_rate != I2S_AUDIOFREQ_48K)) {
+		return false;
+	}
+
+	/* Deinit I2S module */
+	if (HAL_I2S_DeInit(ctx.i2s) != HAL_OK) {
+		return false;
+	}
+
+	/* Set sample rate */
+	ctx.i2s->Init.AudioFreq = sample_rate;
+
+	/* Reinitialize I2S module with new setting */
+	return (HAL_I2S_Init(ctx.i2s) == HAL_OK);
+}
+
 void player_init(I2S_HandleTypeDef *i2s, I2C_HandleTypeDef *i2c) {
 	ctx.buffer_req = BUFFER_REQ_NONE;
 	ctx.state = PLAYER_STOPPED;
@@ -67,9 +85,18 @@ int player_start(const char *path) {
 		return -EIO;
 	}
 
+	/* Set proper sample rate */
+	const uint32_t pcm_sample_rate = player_get_pcm_sample_rate();
+	const bool i2s_ret = configure_i2s(pcm_sample_rate);
+	if (!i2s_ret) {
+		drmp3_uninit(&ctx.mp3);
+		return -EINVAL;
+	}
+
 	/* Fill buffer with frames */
 	const drmp3_uint64 frames_read = drmp3_read_pcm_frames_s16(&ctx.mp3, PLAYER_BUFFER_SIZE_FRAMES, ctx.dma_buffer);
 	if (frames_read == 0) {
+		drmp3_uninit(&ctx.mp3);
 		return -EIO;
 	}
 

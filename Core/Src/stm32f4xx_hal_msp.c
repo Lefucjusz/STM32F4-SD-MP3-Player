@@ -32,7 +32,8 @@ extern DMA_HandleTypeDef hdma_spi3_tx;
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN Define */
-
+#define PLLI2SN_44K 247
+#define PLLI2SN_48K 192
 /* USER CODE END Define */
 
 /* Private macro -------------------------------------------------------------*/
@@ -165,7 +166,7 @@ void HAL_I2S_MspInit(I2S_HandleTypeDef* hi2s)
   /** Initializes the peripherals clock
   */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S;
-    PeriphClkInitStruct.PLLI2S.PLLI2SN = 247;
+    PeriphClkInitStruct.PLLI2S.PLLI2SN = (hi2s->Init.AudioFreq == I2S_AUDIOFREQ_44K) ? PLLI2SN_44K : PLLI2SN_48K;
     PeriphClkInitStruct.PLLI2S.PLLI2SR = 5;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
