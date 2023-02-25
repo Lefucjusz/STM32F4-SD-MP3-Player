@@ -1,4 +1,11 @@
 # STM32F4 SD MP3 Player
+
+<img src="img/player.jpg" title="Photo of the complete project" alt="Photo of the complete project" width=480 />
+<figcaption><i>Photo of the complete project</i></figcaption>
+
+<br />
+<br />
+
 MP3 player based on [STM32F4 Discovery board](https://www.st.com/en/evaluation-tools/stm32f4discovery.html) with STM32F407VGT6
 MCU, microSD card as a storage and simple HD44780 display GUI with two views - file explorer and playback.
 
@@ -11,7 +18,7 @@ MCU, microSD card as a storage and simple HD44780 display GUI with two views - f
 * Previous/next song functionality
 * Hardware volume control
 * Elapsed and total song time displayed
-* Onboard CS43L22 IC used as a DAC
+* Onboard CS43L22 DAC IC used
 * Decoded samples transferred to DAC using DMA
 * SPI mode SD card driver
 * [dr_mp3](https://github.com/mackron/dr_libs/blob/master/dr_mp3.h) MP3 decoder
@@ -51,11 +58,11 @@ button. Now pressing the right button will switch back to playback view, where t
 be continued from the moment it was paused, but as long as the current directory was not changed. After navigating
 to another directory returning to the previously paused playback is impossible.
 
-If the directory is empty, `Directory is empty!` text will appear on the screen.
+If current directory is empty, `Directory is empty!` text will appear on the screen.
 
 ## Hardware
 ### STM32F4 Discovery board
-The project is built on [STM32F4 Discovery board](https://www.st.com/en/evaluation-tools/stm32f4discovery.html) - a 
+The project is built on [STM32F4 Discovery board](https://www.st.com/en/evaluation-tools/stm32f4discovery.html) - 
 development board with quite powerful STM32F407VGT6 MCU with Cortex-M4 core. The board includes some peripheral
 devices such as LIS302DL accelerometer, MP45DT02 microphone or CS43L22 DAC with integrated class D amplifier,
 which is as an output device in this project. The board includes also ST-LINK/V2 programmer/debugger.
@@ -75,7 +82,7 @@ to STM32F407, as both of them operate in 3.3V logic, but I just had this adapter
 in such connection.
 
 The card functions in SPI mode, which has an advantage of being much less complex than the native SDIO protocol, at
-the cost of being much slower, but in this application the resulting throughput is absolutely sufficient.
+the cost of being much slower, but in this application the obtained throughput is absolutely sufficient.
 Another drawback of this mode is worse compatibility, a lot of bigger (>4GB) cards seem to not support it. I spent long
 hours trying to find the bug that prevents my 16GB card from being detected only to find out that switching to old and
 forgotten 2GB device solves the issue.
@@ -154,6 +161,10 @@ buttons attached.
 
 ## Things to improve
 
+### Support for other sample rates
+For now only 44100Hz and 48000Hz sample rates are supported, as these are the most popular ones used to encode music
+files.
+
 ### Add tags
 Current implementation completely ignores tags in MP3 files - only filenames are displayed. For a second I thought about
 implementing basic tags handling, but came to a conclusion that there so little space on the screen that it's not worth it.
@@ -171,8 +182,8 @@ as CBR and does not contain big metadata, as e.g. album cover embedded in tags. 
 some tag handling (and Xing frame for VBR files) would be required.
 
 ### Extension case sensitivity
-Currently only `.mp3` extension will be classified as valid, `.mP3`, `.Mp3` or `.MP3` will all fail. This is actually
-very simple to change, I'll probably fix it soon.
+Currently only `.mp3` extension is considered valid, `.mP3`, `.Mp3` or `.MP3` will all fail. This is actually
+very simple to change, I'll probably fix it soon. See `player.c: is_extension()`.
 
 ### Volume control "popup"
 In the current implementation volume control is only audible, there's no visual information on current volume level
