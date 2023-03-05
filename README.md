@@ -182,7 +182,3 @@ some invalid total time will be displayed.
 Song length is computed by dividing file size by MP3 frame bitrate. That equation is valid only if the file is encoded
 as CBR and does not contain big metadata, as e.g. album cover embedded in tags. To robustly get proper play time value
 some tag handling (and Xing frame for VBR files) would be required.
-
-### Extension case sensitivity
-Currently only `.mp3` extension is considered valid, `.mP3`, `.Mp3` or `.MP3` will all fail. This is actually
-very simple to change, I'll probably fix it soon. See `player.c: is_extension()`.
