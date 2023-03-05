@@ -32,10 +32,7 @@ static player_ctx_t ctx;
 
 static bool is_extension(const char *filename, const char *ext) {
     const char *dot_ptr = strrchr(filename, '.');
-    if ((dot_ptr != NULL) && (strcmp(dot_ptr, ext) == 0)) {
-        return true;
-    }
-    return false;
+    return ((dot_ptr != NULL) && (strcasecmp(dot_ptr, ext) == 0));
 }
 
 static bool configure_i2s(uint32_t sample_rate) {
