@@ -51,6 +51,10 @@ static int32_t clamp(int32_t val, int32_t min, int32_t max) {
 	return (val > max) ? max : (val < min) ? min : val;
 }
 
+static int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max) {
+	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
 static bool is_directory(const FILINFO *fno) {
 	return fno->fattrib & AM_DIR;
 }
@@ -156,11 +160,17 @@ static void render_view_playback(gui_refresh_t refresh_mode) {
 }
 
 static void render_view_volume(void) {
+	const uint8_t volume_bar_length = map(ctx.volume, GUI_MIN_VOLUME, GUI_MAX_VOLUME, 1, DISPLAY_LINE_LENGTH);
 	const int8_t volume_db = ctx.volume / CS43L22_VOLUME_STEPS_PER_DB;
 
-	char line_buffer[DISPLAY_LINE_LENGTH + 1];
-	snprintf(line_buffer, sizeof(line_buffer), "Volume level: %ddB", volume_db);
-	display_set_text_sync(line_buffer, "", GUI_SCROLL_DELAY);
+	char first_line[DISPLAY_LINE_LENGTH + 1];
+	snprintf(first_line, sizeof(first_line), "Volume level: %ddB", volume_db);
+
+	char second_line[DISPLAY_LINE_LENGTH + 1];
+	memset(second_line, DISPLAY_BLOCK_GLYPH, volume_bar_length);
+	second_line[volume_bar_length] = '\0';
+
+	display_set_text_sync(first_line, second_line, GUI_SCROLL_DELAY);
 
 	ctx.last_volume_tick = HAL_GetTick();
 }

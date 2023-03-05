@@ -18,6 +18,7 @@
 
 /* From M202MD15FA datasheet */
 #define DISPLAY_PLAY_GLYPH 0x1D
+#define DISPLAY_BLOCK_GLYPH 0xFF
 
 #define DISPLAY_LINE_NUM 2
 #define DISPLAY_LINE_LENGTH 20

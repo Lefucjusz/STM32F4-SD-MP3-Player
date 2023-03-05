@@ -51,8 +51,9 @@ current directory. The list wraps around after reaching its beginning or end, i.
 in the current directory will result in starting playback from the first file. Pressing enter button will pause and resume
 the playback. During the playback of the song, left and right buttons control the volume, decrementing or incrementing 
 its value, respectively. Pressing one of the buttons will switch the view to volume view, where current volume level, in
-the unit of dBs, is displayed. In this view, only volume buttons are functional. The view switches back to playback 
-view automatically, after two seconds of inactivity. The volume is changed in 3dB steps, in range from -51dB to +12dB.
+the unit of dBs, as well as in form of level bar, is displayed. In this view, only volume buttons are functional. 
+The view switches back to playback view automatically, after two seconds of inactivity. The volume is changed in 3dB 
+steps, in range from -51dB to +12dB.
 
 To leave playback view and switch to explorer view, pause the playback by pressing enter button, then press left
 button. Now pressing the right button will switch back to playback view, where the playback of the current song can
