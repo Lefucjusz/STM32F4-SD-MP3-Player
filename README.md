@@ -7,12 +7,12 @@
 <br />
 
 MP3 player based on [STM32F4 Discovery board](https://www.st.com/en/evaluation-tools/stm32f4discovery.html) with STM32F407VGT6
-MCU, microSD card as a storage and simple HD44780 display GUI with two views - file explorer and playback.
+MCU, microSD card as a storage and simple HD44780 display GUI with three views - file explorer, playback and volume control.
 
 ## Functionalities
 * Playback of MP3 files with 44100Hz and 48000Hz sample rate
 * Support for both CBR and VBR files
-* Simple 5-button GUI with two views, based on HD44780 display
+* Simple 5-button GUI with three views, based on HD44780 display
 * Navigation through directories to select song to play
 * Play/pause functionality
 * Previous/next song functionality
@@ -26,7 +26,7 @@ MCU, microSD card as a storage and simple HD44780 display GUI with two views - f
 
 ## Description
 ### GUI
-GUI consists of two views - file explorer view and playback view.
+GUI consists of three views - file explorer view, playback view and volume view.
 
 The device starts in file explorer view. After successful initialization, the display will show the content of
 the root directory of the inserted SD card, listing all the entries present there sorted alphabetically.
@@ -48,10 +48,11 @@ try to play next valid MP3 from the current directory, stopping when the end of 
 
 In playback view, pressing up and down button will result in skipping to the next or previous valid MP3 file in the 
 current directory. The list wraps around after reaching its beginning or end, i.e. pressing down on the last file
-in the current directory will result in starting playback from the first file. In this view, left and right button
-control the volume, decrementing or incrementing its value, respectively. Note that the change is only audible,
-there's no visual information about the action or current volume level. Pressing enter button will pause and resume
-the playback.
+in the current directory will result in starting playback from the first file. Pressing enter button will pause and resume
+the playback. During the playback of the song, left and right buttons control the volume, decrementing or incrementing 
+its value, respectively. Pressing one of the buttons will switch the view to volume view, where current volume level, in
+the unit of dBs, is displayed. In this view, only volume buttons are functional. The view switches back to playback 
+view automatically, after two seconds of inactivity. The volume is changed in 3dB steps, in range from -51dB to +12dB.
 
 To leave playback view and switch to explorer view, pause the playback by pressing enter button, then press left
 button. Now pressing the right button will switch back to playback view, where the playback of the current song can
@@ -65,7 +66,7 @@ If current directory is empty, `Directory is empty!` text will appear on the scr
 The project is built on [STM32F4 Discovery board](https://www.st.com/en/evaluation-tools/stm32f4discovery.html) - 
 development board with quite powerful STM32F407VGT6 MCU with Cortex-M4 core. The board includes some peripheral
 devices such as LIS302DL accelerometer, MP45DT02 microphone or CS43L22 DAC with integrated class D amplifier,
-which is as an output device in this project. The board includes also ST-LINK/V2 programmer/debugger.
+which is used as an output device in this project. The board includes also ST-LINK/V2 programmer/debugger.
 
 ### Display
 The display can be any HD44780-compatible alphanumeric device. The program is designed for 20x2 version (20 columns, 2 rows), 
@@ -138,7 +139,7 @@ There is some issue with mounting the SD card. Check all the wiring, it's very e
 the wrong pin. Make sure the card is formatted in `FAT32` filesystem, Linux `ext2/3/4` filesystems are not supported.
 If none of this helped, there's a possibility that the microSD card used does not support SPI mode, try another
 one, possibly some older and with capacity less than 4GB. The exact error code can be seen by running the software
-in debug mode, placing a breakpoint after `f_mount` call in `main.c` and viewing the return code from the function.
+in debug mode, placing a breakpoint after `f_mount` call in `main.c` and checking the return code from the function.
 
 #### The sound is too fast/too slow or stutters
 
@@ -184,8 +185,3 @@ some tag handling (and Xing frame for VBR files) would be required.
 ### Extension case sensitivity
 Currently only `.mp3` extension is considered valid, `.mP3`, `.Mp3` or `.MP3` will all fail. This is actually
 very simple to change, I'll probably fix it soon. See `player.c: is_extension()`.
-
-### Volume control "popup"
-In the current implementation volume control is only audible, there's no visual information on current volume level
-neither in playback view, nor after pressing the buttons controlling the volume. Some additional view might be 
-added to show this value - I didn't really need it.

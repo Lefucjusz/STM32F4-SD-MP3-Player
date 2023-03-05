@@ -15,8 +15,9 @@
 #define CS43L22_ID_VALUE 0b11100000
 
 /* Volume limits, one step is 0.5dB change */
-#define CS43L22_MAX_VOLUME 24 // +12dB
-#define CS43L22_MIN_VOLUME -103 // -51.5dB
+#define CS43L22_VOLUME_STEPS_PER_DB 2
+#define CS43L22_MAX_VOLUME (12 * CS43L22_VOLUME_STEPS_PER_DB) // +12dB
+#define CS43L22_MIN_VOLUME (-51.5 * CS43L22_VOLUME_STEPS_PER_DB) // -51.5dB
 
 /* Masks */
 #define CS43L22_ID_MASK 0b11111000 // To mask chip revision bits

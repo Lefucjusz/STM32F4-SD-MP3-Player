@@ -16,13 +16,15 @@
 #define GUI_BITRATE_VBR -1
 #define GUI_FRAMES_TO_ANALYZE_BITRATE 5
 #define GUI_MINS_PER_HOUR 60
-#define GUI_PLAYBACK_REFRESH_INTERVAL 250
+#define GUI_PLAYBACK_REFRESH_INTERVAL 250 // ms
+#define GUI_VOLUME_VIEW_DISPLAY_TIME 2000 // ms
 
 #define KBITS_TO_BYTES(x) ((1000 * (x)) / 8)
 
 typedef enum {
 	GUI_VIEW_EXPLORER,
-	GUI_VIEW_PLAYBACK
+	GUI_VIEW_PLAYBACK,
+	GUI_VIEW_VOLUME
 } gui_view_t;
 
 typedef enum {
@@ -35,7 +37,9 @@ typedef struct {
 	dir_list_t *dirs;
 	dir_entry_t *current_dir;
 	dir_entry_t *last_playback_dir; // Stores entry that was played before leaving to explorer view
+	uint32_t last_refresh_tick; // Used to periodically refresh playback view
 	int8_t volume;
+	uint32_t last_volume_tick; // Used to return from volume view
 	uint32_t last_bitrate; // Used to determine whether current song is VBR
 	uint32_t frames_analyzed; // Frames analyzed by VBR detector
 } gui_ctx_t;
@@ -151,6 +155,16 @@ static void render_view_playback(gui_refresh_t refresh_mode) {
 	}
 }
 
+static void render_view_volume(void) {
+	const int8_t volume_db = ctx.volume / CS43L22_VOLUME_STEPS_PER_DB;
+
+	char line_buffer[DISPLAY_LINE_LENGTH + 1];
+	snprintf(line_buffer, sizeof(line_buffer), "Volume level: %ddB", volume_db);
+	display_set_text_sync(line_buffer, "", GUI_SCROLL_DELAY);
+
+	ctx.last_volume_tick = HAL_GetTick();
+}
+
 static void callback_up(void) {
 	ctx.current_dir = dir_get_prev(ctx.dirs, ctx.current_dir);
 
@@ -204,12 +218,21 @@ static void callback_left(void) {
 				ctx.volume -= GUI_VOLUME_STEP;
 				ctx.volume = clamp(ctx.volume, GUI_MIN_VOLUME, GUI_MAX_VOLUME);
 				player_set_volume(ctx.volume);
+				render_view_volume();
+				ctx.view = GUI_VIEW_VOLUME;
 			}
 			else {
 				ctx.last_playback_dir = ctx.current_dir;
 				ctx.view = GUI_VIEW_EXPLORER;
 				render_view_explorer();
 			}
+			break;
+
+		case GUI_VIEW_VOLUME:
+			ctx.volume -= GUI_VOLUME_STEP;
+			ctx.volume = clamp(ctx.volume, GUI_MIN_VOLUME, GUI_MAX_VOLUME);
+			player_set_volume(ctx.volume);
+			render_view_volume();
 			break;
 
 		default:
@@ -232,7 +255,16 @@ static void callback_right(void) {
 				ctx.volume += GUI_VOLUME_STEP;
 				ctx.volume = clamp(ctx.volume, GUI_MIN_VOLUME, GUI_MAX_VOLUME);
 				player_set_volume(ctx.volume);
+				render_view_volume();
+				ctx.view = GUI_VIEW_VOLUME;
 			}
+			break;
+
+		case GUI_VIEW_VOLUME:
+			ctx.volume += GUI_VOLUME_STEP;
+			ctx.volume = clamp(ctx.volume, GUI_MIN_VOLUME, GUI_MAX_VOLUME);
+			player_set_volume(ctx.volume);
+			render_view_volume();
 			break;
 
 		default:
@@ -281,28 +313,38 @@ static void callback_enter(void) {
 
 /* It's VERY BAD that it's here, but I had no better idea... */
 static void refresh_task(void) {
-	if (ctx.view != GUI_VIEW_PLAYBACK) {
-		return;
-	}
-
-	/* Refresh playback elapsed time */
-	static uint32_t last_tick = 0;
 	const uint32_t current_tick = HAL_GetTick();
-	if ((current_tick - last_tick) > GUI_PLAYBACK_REFRESH_INTERVAL) {
-		render_view_playback(GUI_REFRESH_TIME);
-		last_tick = current_tick;
-	}
 
-	/* Check if next song should be played */
-	const dir_entry_t *first_dir = ctx.dirs->head;
-	dir_entry_t *next_dir = dir_get_next(ctx.dirs, ctx.current_dir);
+	switch (ctx.view) {
+		case GUI_VIEW_PLAYBACK: {
+			/* Refresh playback elapsed time */
+			if ((current_tick - ctx.last_refresh_tick) > GUI_PLAYBACK_REFRESH_INTERVAL) {
+				render_view_playback(GUI_REFRESH_TIME);
+				ctx.last_refresh_tick = current_tick;
+			}
 
-	if ((player_get_state() == PLAYER_STOPPED) && (first_dir != next_dir)) {
-		ctx.current_dir = next_dir;
+			/* Check if next song should be played */
+			const dir_entry_t *first_dir = ctx.dirs->head;
+			dir_entry_t *next_dir = dir_get_next(ctx.dirs, ctx.current_dir);
 
-		const FILINFO *fno = (FILINFO *)ctx.current_dir->data;
-		start_playback(fno->fname);
-		render_view_playback(GUI_REFRESH_ALL);
+			if ((player_get_state() == PLAYER_STOPPED) && (first_dir != next_dir)) {
+				ctx.current_dir = next_dir;
+
+				const FILINFO *fno = (FILINFO *)ctx.current_dir->data;
+				start_playback(fno->fname);
+				render_view_playback(GUI_REFRESH_ALL);
+			}
+		} break;
+
+		case GUI_VIEW_VOLUME:
+			if ((current_tick - ctx.last_volume_tick) > GUI_VOLUME_VIEW_DISPLAY_TIME) {
+				render_view_playback(GUI_REFRESH_ALL);
+				ctx.view = GUI_VIEW_PLAYBACK;
+			}
+			break;
+
+		default:
+			break;
 	}
 }
 
