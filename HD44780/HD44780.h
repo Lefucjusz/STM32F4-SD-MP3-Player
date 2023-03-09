@@ -84,7 +84,7 @@ typedef enum {
 
 typedef struct {
 	void (*set_pin_state)(HD44780_pin_t pin, HD44780_pin_state_t state);
-	void (*delay_ms)(uint32_t ms);
+	void (*delay_us)(uint16_t us);
 } HD44780_io_t;
 
 typedef struct {

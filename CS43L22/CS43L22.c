@@ -1,4 +1,5 @@
 #include "CS43L22.h"
+#include "delay.h"
 
 #define CS43L22_ADDRESS_SIZE 1 // byte
 
@@ -20,7 +21,7 @@ bool CS43L22_power_down(I2C_HandleTypeDef *i2c) {
 	/* Power down the chip */
 	reg_value = 0b10011111;
 	i2c_status = HAL_I2C_Mem_Write(i2c, CS43L22_I2C_ADDRESS, CS43L22_POWER_CTL_1_REG, CS43L22_ADDRESS_SIZE, &reg_value, sizeof(reg_value), CS43L22_I2C_TIMEOUT);
-	HAL_Delay(1); // Datasheet specifies "at least 100us" (section 4.10, p. 31)
+	delay_ms(1); // Datasheet specifies "at least 100us" (section 4.10, p. 31)
 
 	return ((i2c_status == HAL_OK) ? true : false);
 }

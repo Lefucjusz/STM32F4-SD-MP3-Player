@@ -7,6 +7,7 @@
 
 #include "HD44780_io_wrapper.h"
 #include "stm32f4xx_hal.h"
+#include "delay.h"
 
 #define HD44780_GPIO_PORT GPIOD
 
@@ -33,14 +34,10 @@ static void set_pin_state(HD44780_pin_t pin, HD44780_pin_state_t state) {
 	}
 }
 
-static void delay_ms(uint32_t ms) {
-	HAL_Delay(ms);
-}
-
 HD44780_io_t *HD44780_get_io(void) {
 	static HD44780_io_t io = {
 			.set_pin_state = set_pin_state,
-			.delay_ms = delay_ms
+			.delay_us = delay_us
 	};
 
 	return &io;

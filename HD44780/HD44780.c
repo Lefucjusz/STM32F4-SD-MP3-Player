@@ -40,13 +40,12 @@ void HD44780_init(HD44780_config_t* const config) {
 		HD44780_config->type = HD44780_DISPLAY_16x2;
 	}
 
-	/* WTF?! Weird 4-bit init instructions... */
-	HD44780_write_cmd(0x30);
-	HD44780_config->io->delay_ms(5);
-	HD44780_write_cmd(0x30);
-	HD44780_config->io->delay_ms(1);
-	HD44780_write_cmd(0x30);
-	HD44780_config->io->delay_ms(1);
+	HD44780_write_cmd(0x03);
+	HD44780_config->io->delay_us(4500); // Wait for more than 4.1ms (HD44780 datasheet, Fig. 24, p. 46)
+	HD44780_write_cmd(0x03);
+	HD44780_config->io->delay_us(150); // Wait for more than 100us
+	HD44780_write_cmd(0x03);
+	HD44780_config->io->delay_us(100); // Not specified in DS, chosen empirically
 	HD44780_write_cmd(0x02);
 
 	/* Here begins the real configuration */
@@ -76,6 +75,7 @@ void HD44780_write_byte(uint8_t byte, HD44780_mode_t mode) {
 
 	/* Pulse enable signal */
 	HD44780_config->io->set_pin_state(HD44780_PIN_E, HD44780_HIGH);
+	HD44780_config->io->delay_us(1); // At least 450ns (HD44780 datasheet, p. 49)
 	HD44780_config->io->set_pin_state(HD44780_PIN_E, HD44780_LOW);
 
 	/* Write lower nibble */
@@ -86,7 +86,11 @@ void HD44780_write_byte(uint8_t byte, HD44780_mode_t mode) {
 
 	/* Pulse enable signal */
 	HD44780_config->io->set_pin_state(HD44780_PIN_E, HD44780_HIGH);
+	HD44780_config->io->delay_us(1);
 	HD44780_config->io->set_pin_state(HD44780_PIN_E, HD44780_LOW);
+
+	/* Wait at least 37us for command to be executed (HD44780 datasheet, Table 6, p. 24) */
+	HD44780_config->io->delay_us(50);
 }
 
 void HD44780_write_cmd(uint8_t command) {
@@ -100,12 +104,11 @@ void HD44780_write_char(char character) {
 void HD44780_clear(void) {
 	/* Clear display */
 	HD44780_write_cmd(HD44780_CLEAR_DISPLAY_CMD);
-	HD44780_config->io->delay_ms(1);
+	HD44780_config->io->delay_us(1600); // At least 1.52ms (HD44780 datasheet, Table 6, p. 24)
 
 	/* Set cursor to the first column of the first row */
 	HD44780_type_data_t type_data = HD44780_type_data[HD44780_config->type];
 	HD44780_write_cmd(HD44780_SET_DDRAM_ADDR_CMD | type_data.rows_first_addr[0]);
-	HD44780_config->io->delay_ms(1);
 }
 
 void HD44780_gotoxy(size_t x, size_t y) {
