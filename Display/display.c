@@ -17,9 +17,12 @@
 #define DISPLAY_SUFFIX "  "
 #define DISPLAY_SUFFIX_LENGTH 2
 
-/* Pause glyph */
+/* Custom glyphs */
 static const uint8_t pause_glyph[] = {
 	0b00000, 0b01010, 0b01010, 0b01010, 0b01010, 0b01010, 0b00000
+};
+static const uint8_t play_glyph[] = {
+	0b00000, 0b01000, 0b01100, 0b01110, 0b01100, 0b01000, 0b00000
 };
 
 typedef struct {
@@ -34,6 +37,7 @@ static display_ctx_t ctx;
 void display_init(void) {
 	memset(&ctx, 0, sizeof(display_ctx_t));
 	HD44780_load_custom_glyph(pause_glyph, DISPLAY_PAUSE_GLYPH);
+	HD44780_load_custom_glyph(play_glyph, DISPLAY_PLAY_GLYPH);
 	HD44780_clear();
 }
 

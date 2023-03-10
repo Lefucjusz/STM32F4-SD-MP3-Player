@@ -11,13 +11,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* Custom char loaded to CGRAM in display_init(), address
+/* Custom chars loaded to CGRAM in display_init(); address
  * 0x00 cannot be used because it's string null-terminator
  * in C, so I just picked the next one. */
 #define DISPLAY_PAUSE_GLYPH 0x01
+#define DISPLAY_PLAY_GLYPH 0x02
 
-/* From M202MD15FA datasheet */
-#define DISPLAY_PLAY_GLYPH 0x1D
+/* From HD44780 charset */
 #define DISPLAY_BLOCK_GLYPH 0xFF
 
 #define DISPLAY_LINE_NUM 2
