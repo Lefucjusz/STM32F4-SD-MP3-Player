@@ -176,14 +176,14 @@ static void render_view_volume(void) {
 }
 
 static void callback_up(void) {
-	ctx.current_dir = dir_get_prev(ctx.dirs, ctx.current_dir);
-
 	switch (ctx.view) {
 		case GUI_VIEW_EXPLORER:
+			ctx.current_dir = dir_get_prev(ctx.dirs, ctx.current_dir);
 			render_view_explorer();
 			break;
 
 		case GUI_VIEW_PLAYBACK: {
+			ctx.current_dir = dir_get_prev(ctx.dirs, ctx.current_dir);
 			const FILINFO *fno = (FILINFO *)ctx.current_dir->data;
 			start_playback(fno->fname);
 			render_view_playback(GUI_REFRESH_ALL);
@@ -195,14 +195,14 @@ static void callback_up(void) {
 }
 
 static void callback_down(void) {
-	ctx.current_dir = dir_get_next(ctx.dirs, ctx.current_dir);
-
 	switch (ctx.view) {
 		case GUI_VIEW_EXPLORER:
+			ctx.current_dir = dir_get_next(ctx.dirs, ctx.current_dir);
 			render_view_explorer();
 			break;
 
 		case GUI_VIEW_PLAYBACK: {
+			ctx.current_dir = dir_get_next(ctx.dirs, ctx.current_dir);
 			const FILINFO *fno = (FILINFO *)ctx.current_dir->data;
 			start_playback(fno->fname);
 			render_view_playback(GUI_REFRESH_ALL);
